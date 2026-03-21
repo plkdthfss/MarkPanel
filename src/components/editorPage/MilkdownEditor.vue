@@ -24,7 +24,7 @@ onMounted(() => {
     crepe = new Crepe({
       root: editorRef.value,
       features: {
-        [Crepe.Feature.Toolbar]: true,
+        [Crepe.Feature.Toolbar]: false,
       },
       featureConfigs: {
         [Crepe.Feature.BlockEdit]: {

@@ -1,8 +1,8 @@
 <template>
-  <div class="editor-view" :class="`theme-${themeMode}`">
-    <NoteHeader :theme-mode="themeMode" @update:theme-mode="themeMode = $event" @back="goBack" />
+  <div class="editor-view" :class="`theme-${themeStore.theme}`">
+    <NoteHeader :theme-mode="themeStore.theme" @update:theme-mode="themeStore.theme = $event" @back="goBack" />
     <main class="editor-wrapper">
-      <MilkdownEditor :theme-mode="themeMode" />
+      <MilkdownEditor :theme-mode="themeStore.theme" />
     </main>
   </div>
 </template>
@@ -12,6 +12,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import NoteHeader from '../components/editorPage/NoteHeader.vue'
 import MilkdownEditor from '../components/editorPage/MilkdownEditor.vue'
+import { useThemeStore } from '../store/theme'
+
+const themeStore = useThemeStore()
 
 const router = useRouter()
 const themeMode = ref<'light' | 'dark'>('dark')

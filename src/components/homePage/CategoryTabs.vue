@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import type { TabType } from '../../models/note'
+import type { TabType } from '../../store/note'
 
 interface Tab {
   id: TabType

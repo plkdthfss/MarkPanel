@@ -1,16 +1,13 @@
 <template>
-  <div class="home-view" :class="`theme-${themeMode}`">
-    <HomeHeader :theme-mode="themeMode" @update:theme-mode="themeMode = $event" />
+  <div class="home-view" :class="`theme-${themeStore.theme}`">
+    <HomeHeader :theme-mode="themeStore.theme" @update:theme-mode="themeStore.theme = $event" />
     <SearchBar v-model="searchQuery" />
     <AddButton />
-    
-    <CategoryTabs :active-tab="activeTab" @update:active-tab="activeTab = $event" />
+    <!-- <CategoryTabs :active-tab="activeTab" @update:active-tab="activeTab = $event" /> -->
     <NoteList 
       :notes="filteredNotes"
-      :active-tab="activeTab"
       :selected-note-id="selectedNoteId"
       @select-note="selectNote"
-      @toggle-favorite="toggleFavorite"
     />
     <div class="footer-info">
       <span class="workspace-name">My Workspace</span>
@@ -22,26 +19,25 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import HomeHeader from '../components/homePage/HomeHeader.vue'
-import SearchBar from '../components/homePage/searchBar.vue'
+import SearchBar from '../components/homePage/SearchBar.vue'
 import AddButton from '../components/homePage/AddButton.vue'
-import CategoryTabs from '../components/homePage/CategoryTabs.vue'
+//import CategoryTabs from '../components/homePage/CategoryTabs.vue'
 import NoteList from '../components/homePage/NoteList.vue'
-import type { Note, TabType } from '../models/note'
+import type { Note, TabType } from '../store/note'
+import { useThemeStore } from '../store/theme'
 
-const themeMode = ref<'light' | 'dark'>('dark')
+const themeStore = useThemeStore()
 const activeTab = ref<TabType>('all')
 const selectedNoteId = ref<string>()
 const searchQuery = ref('')
 
+// note序列
 const notes = ref<Note[]>([
   {
     id: '1',
     title: 'Project Alpha Roadmap',
     content: 'The core milestones for Q4 include the integration of the new API endpoints and the overhaul of the dashboard UI components...',
-    category: 'Work',
     timestamp: Date.now() - 60000,
-    isFavorite: true,
-    tags: ['Work'],
   }
 ])
 
@@ -56,27 +52,11 @@ const filteredNotes = computed(() => {
     )
   }
 
-  switch (activeTab.value) {
-    case 'favorites':
-      result = result.filter(note => note.isFavorite)
-      break
-    case 'pinned':
-      result = result.filter(note => note.category === 'Pinned')
-      break
-  }
-
   return result
 })
 
 const selectNote = (id: string) => {
   selectedNoteId.value = id
-}
-
-const toggleFavorite = (id: string) => {
-  const note = notes.value.find(n => n.id === id)
-  if (note) {
-    note.isFavorite = !note.isFavorite
-  }
 }
 </script>
 

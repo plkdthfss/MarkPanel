@@ -1,6 +1,6 @@
 <template>
   <div class="note-list">
-    <div v-if="filteredNotes.length === 0" class="empty-state">
+    <div v-if="notes.length === 0" class="empty-state">
       <n-icon :size="48" color="var(--text-secondary)">
         <DocumentOutline />
       </n-icon>
@@ -10,7 +10,7 @@
 
     <div v-else class="notes-container">
       <div
-        v-for="note in filteredNotes"
+        v-for="note in notes"
         :key="note.id"
         @click="$emit('select-note', note.id)"
       >
@@ -28,11 +28,10 @@
 import { computed } from 'vue'
 import { DocumentOutline } from '@vicons/ionicons5'
 import NoteCard from './NoteCard.vue'
-import type { Note, TabType } from '../../models/note'
+import type { Note, TabType } from '../../store/note'
 
 interface Props {
   notes: Note[]
-  activeTab: TabType
   selectedNoteId?: string
 }
 
@@ -43,18 +42,6 @@ interface Emits {
 
 const props = defineProps<Props>()
 defineEmits<Emits>()
-
-const filteredNotes = computed(() => {
-  switch (props.activeTab) {
-    case 'favorites':
-      return props.notes.filter(note => note.isFavorite)
-    case 'pinned':
-      return props.notes.filter(note => note.category === 'Pinned')
-    case 'all':
-    default:
-      return props.notes
-  }
-})
 </script>
 
 <style scoped>

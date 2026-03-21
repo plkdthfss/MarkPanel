@@ -28,22 +28,14 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { DocumentTextOutline, SettingsOutline, MoonOutline, SunnyOutline } from '@vicons/ionicons5'
+import { useThemeStore } from '../../store/theme'
 
-interface Props {
-  themeMode: 'light' | 'dark'
-}
+const themeStore = useThemeStore()
 
-interface Emits {
-  (e: 'update:themeMode', value: 'light' | 'dark'): void
-}
-
-const props = defineProps<Props>()
-const emit = defineEmits<Emits>()
-
-const isDark = computed(() => props.themeMode === 'dark')
+const isDark = computed(() => themeStore.theme === 'dark')
 
 const toggleTheme = () => {
-  emit('update:themeMode', isDark.value ? 'light' : 'dark')
+  themeStore.toggleTheme()
 }
 </script>
 

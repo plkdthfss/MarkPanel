@@ -9,10 +9,13 @@
     
     <div class="card-footer">
       <div class="tags-section">
+        <!--
         <span v-if="note.category" class="tag" :style="{ backgroundColor: getCategoryColor(note.category) }">
           {{ note.category }}
         </span>
+      -->
       </div>
+      <!--
       <button 
         class="favorite-btn" 
         :class="{ 'is-favorite': note.isFavorite }"
@@ -24,13 +27,14 @@
           <Star v-else />
         </n-icon>
       </button>
+    -->
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { StarOutline, Star } from '@vicons/ionicons5'
-import type { Note } from '../../models/note'
+import type { Note } from '../../store/note'
 
 interface Props {
   note: Note
