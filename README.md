@@ -2,9 +2,10 @@
 # EasyNote
 一个Chrome插件，用于实时markdown笔记记录
 =======
-# milkdown_demo
+# EasyNote
 
-This template should help get you started developing with Vue 3 in Vite.
+This template should help get you started developing with Vue 3 in Vite.\
+This project utilizes the open-source project Milkdown.<https://github.com/Milkdown/milkdown>
 
 ## Recommended IDE Setup
 
