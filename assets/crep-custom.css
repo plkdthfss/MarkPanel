@@ -1,5 +1,9 @@
 /* crepe-light-custom.css */
 
+:root {
+  --crepe-font-size-code: 17px;
+}
+
 /* 1. 全局强制白色 + light 配色（覆盖主题变量） */
 .crepe .milkdown {
   /* 纯白背景，确保无灰调 */
@@ -76,4 +80,26 @@
 .crepe-toolbar {
   background: #ffffff !important;
   border-bottom: 1px solid #eee !important;
+}
+
+/* CodeMirror 统一控制（关键修复）
+  code部分修改字体（保证行号文字对齐）
+*/
+.cm-editor {
+  font-size: var(--crepe-font-size-code);
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* 关键对齐 */
+.cm-line,
+.cm-gutterElement {
+  display: flex;
+  align-items: center;
+  padding: 0 !important;
+}
+
+/* 防止额外偏移 */
+.cm-content,
+.cm-gutters {
+  padding-top: 0 !important;
 }

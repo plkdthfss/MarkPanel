@@ -26,7 +26,10 @@ onMounted(() => {
       featureConfigs:{
         [Crepe.Feature.BlockEdit]:{
           handleAddIcon: '',
-        }
+        },
+        [Crepe.Feature.CodeMirror]: {
+          extensions: []
+        },
       },
       defaultValue: '# Hello Milkdown!\n这是一段测试内容。尝试输入 `/` 来唤起斜杠菜单。',
     });
