@@ -5,7 +5,7 @@ import EditorView from '../view/EditorView.vue'
 
 const routes = [
   {path: '/', component: HomeView},
-  {path: '/editor', component: EditorView},
+  {path: '/editor/:id', component: EditorView},
   {path: '/:pathMatch(.*)*',redirect: '/'}
 ]
 

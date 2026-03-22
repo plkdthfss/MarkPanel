@@ -17,7 +17,6 @@ export const useThemeStore = defineStore('theme', () => {
     applyTheme(next)
   }
 
-  // 初始化时应用一次
   applyTheme(theme.value)
 
   watch(theme, (v) => {

@@ -1,26 +1,55 @@
 <template>
   <div class="editor-view" :class="`theme-${themeStore.theme}`">
-    <NoteHeader :theme-mode="themeStore.theme" @update:theme-mode="themeStore.theme = $event" @back="goBack" />
+    <NoteHeader 
+      :theme-mode="themeStore.theme" 
+      :note-title="currentNote?.title || ''"
+      @update:theme-mode="themeStore.theme = $event" 
+      @back="goBack"
+      @update:title="updateTitle"
+    />
     <main class="editor-wrapper">
-      <MilkdownEditor :theme-mode="themeStore.theme" />
+      <MilkdownEditor 
+        :theme-mode="themeStore.theme"
+        :note-id="currentNoteId"
+        :initial-content="currentNote?.content || ''"
+      />
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import NoteHeader from '../components/editorPage/NoteHeader.vue'
 import MilkdownEditor from '../components/editorPage/MilkdownEditor.vue'
 import { useThemeStore } from '../store/theme'
+import { useNoteStore } from '../store/note'
 
 const themeStore = useThemeStore()
-
+const noteStore = useNoteStore()
 const router = useRouter()
-const themeMode = ref<'light' | 'dark'>('dark')
+const route = useRoute()
+
+const currentNoteId = computed(() => route.params.id as string)
+
+const currentNote = computed(() => {
+  return noteStore.notes.find(note => note.id === currentNoteId.value)
+})
+
+onMounted(() => {
+  if (currentNoteId.value) {
+    noteStore.setCurrentNote(currentNoteId.value)
+  }
+})
 
 const goBack = () => {
   router.push('/')
+}
+
+const updateTitle = (newTitle: string) => {
+  if (currentNoteId.value) {
+    noteStore.updateNote(currentNoteId.value, { title: newTitle })
+  }
 }
 </script>
 

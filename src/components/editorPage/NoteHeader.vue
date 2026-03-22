@@ -6,8 +6,14 @@
           <ArrowBackOutline />
         </n-icon>
       </button>
-      <h1 class="note-title" contenteditable="true" spellcheck="false">
-        New Note
+      <h1 
+        class="note-title" 
+        contenteditable="true" 
+        spellcheck="false"
+        @blur="handleTitleBlur"
+        @keydown.enter="handleTitleEnter"
+      >
+        {{ noteTitle }}
       </h1>
     </div>
 
@@ -28,22 +34,44 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { ArrowBackOutline, SettingsOutline, MoonOutline, SunnyOutline } from '@vicons/ionicons5'
 import { useThemeStore } from '../../store/theme'
 
-interface Emits {
-  (e: 'back'): void
+interface Props {
+  themeMode: 'light' | 'dark'
+  noteTitle?: string
 }
 
-defineEmits<Emits>()
+interface Emits {
+  (e: 'back'): void
+  (e: 'update:theme-mode', mode: 'light' | 'dark'): void
+  (e: 'update:title', title: string): void
+}
 
+const props = withDefaults(defineProps<Props>(), {
+  noteTitle: 'New Note'
+})
+
+const emit = defineEmits<Emits>()
 const themeStore = useThemeStore()
 
 const isDark = computed(() => themeStore.theme === 'dark')
 
 const toggleTheme = () => {
   themeStore.toggleTheme()
+}
+
+const handleTitleBlur = (event: Event) => {
+  const target = event.target as HTMLElement
+  const newTitle = target.textContent?.trim() || 'New Note'
+  emit('update:title', newTitle)
+}
+
+const handleTitleEnter = (event: KeyboardEvent) => {
+  event.preventDefault()
+  const target = event.target as HTMLElement
+  target.blur()
 }
 </script>
 

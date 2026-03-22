@@ -11,7 +11,7 @@
     />
     <div class="footer-info">
       <span class="workspace-name">My Workspace</span>
-      <span class="notes-count">{{ notes.length }} NOTES</span>
+      <span class="notes-count">{{ noteStore.notes.length }} NOTES</span>
     </div>
   </div>
 </template>
@@ -23,26 +23,20 @@ import SearchBar from '../components/homePage/SearchBar.vue'
 import AddButton from '../components/homePage/AddButton.vue'
 //import CategoryTabs from '../components/homePage/CategoryTabs.vue'
 import NoteList from '../components/homePage/NoteList.vue'
-import type { Note, TabType } from '../store/note'
+import type { TabType } from '../store/note'
 import { useThemeStore } from '../store/theme'
+import { useNoteStore } from '../store/note'
+import { useRouter } from 'vue-router'
 
 const themeStore = useThemeStore()
+const noteStore = useNoteStore()
+const router = useRouter()
 const activeTab = ref<TabType>('all')
 const selectedNoteId = ref<string>()
 const searchQuery = ref('')
 
-// note序列
-const notes = ref<Note[]>([
-  {
-    id: '1',
-    title: 'Project Alpha Roadmap',
-    content: 'The core milestones for Q4 include the integration of the new API endpoints and the overhaul of the dashboard UI components...',
-    timestamp: Date.now() - 60000,
-  }
-])
-
 const filteredNotes = computed(() => {
-  let result = notes.value
+  let result = noteStore.notes
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
@@ -57,6 +51,7 @@ const filteredNotes = computed(() => {
 
 const selectNote = (id: string) => {
   selectedNoteId.value = id
+  router.push(`/editor/${id}`)
 }
 </script>
 

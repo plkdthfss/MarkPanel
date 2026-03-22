@@ -10,11 +10,14 @@
 <script setup lang="ts">
 import { AddOutline } from '@vicons/ionicons5'
 import { useRouter } from 'vue-router'
+import { useNoteStore } from '../../store/note'
 
 const router = useRouter()
+const noteStore = useNoteStore()
 
 const handleClick = () => {
-  router.push('/editor')
+  const newNote = noteStore.createNewNote()
+  router.push(`/editor/${newNote.id}`)
 }
 </script>
 
