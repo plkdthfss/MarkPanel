@@ -6,15 +6,22 @@ export interface Note {
   title: string
   content: string
   timestamp: number
+  folderId: string
+}
+
+export interface Folder {
+  id: string
+  name: string
 }
 
 export type TabType = 'all' | 'favorites' | 'pinned'
 
-const STORAGE_KEY = 'easynote_notes'
+const NOTES_KEY = 'easynote_notes'
+const FOLDERS_KEY = 'easynote_folders'
 
 const loadNotes = (): Note[] => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(NOTES_KEY)
     if (raw) return JSON.parse(raw) as Note[]
   } catch {
     console.warn('Failed to load notes from localStorage')
@@ -22,27 +29,41 @@ const loadNotes = (): Note[] => {
   return []
 }
 
-const saveNotes = (notes: Note[]) => {
+const loadFolders = (): Folder[] => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes))
+    const raw = localStorage.getItem(FOLDERS_KEY)
+    if (raw) return JSON.parse(raw) as Folder[]
   } catch {
-    console.warn('Failed to save notes to localStorage')
+    console.warn('Failed to load folders from localStorage')
   }
+  // 默认文件夹
+  return [{ id: 'default', name: 'My Workspace' }]
 }
 
 export const useNoteStore = defineStore('note', () => {
-  const notes = ref<Note[]>(loadNotes())
+  const notes = ref<Note[]>(
+    // 迁移旧数据：给没有 folderId 的笔记加上默认值
+    loadNotes().map(n => ({ ...n, folderId: n.folderId ?? 'default' }))
+  )
 
+  const folders = ref<Folder[]>(loadFolders())
   const currentNoteId = ref<string | null>(null)
+  const currentFolderId = ref<string>('default')
 
-  // 监听 notes 变化，自动持久化
   watch(notes, (val) => {
-    saveNotes(val)
+    try { localStorage.setItem(NOTES_KEY, JSON.stringify(val)) }
+    catch { console.warn('Failed to save notes') }
   }, { deep: true })
 
+  watch(folders, (val) => {
+    try { localStorage.setItem(FOLDERS_KEY, JSON.stringify(val)) }
+    catch { console.warn('Failed to save folders') }
+  }, { deep: true })
+
+  // --- Note actions ---
   const getCurrentNote = () => {
     if (!currentNoteId.value) return null
-    return notes.value.find(note => note.id === currentNoteId.value)
+    return notes.value.find(n => n.id === currentNoteId.value)
   }
 
   const createNewNote = () => {
@@ -51,6 +72,7 @@ export const useNoteStore = defineStore('note', () => {
       title: 'NewNote',
       content: '',
       timestamp: Date.now(),
+      folderId: currentFolderId.value,
     }
     notes.value.unshift(newNote)
     currentNoteId.value = newNote.id
@@ -66,22 +88,53 @@ export const useNoteStore = defineStore('note', () => {
 
   const deleteNote = (id: string) => {
     const index = notes.value.findIndex(n => n.id === id)
-    if (index > -1) {
-      notes.value.splice(index, 1)
-    }
+    if (index > -1) notes.value.splice(index, 1)
   }
 
   const setCurrentNote = (id: string) => {
     currentNoteId.value = id
   }
 
+  // --- Folder actions ---
+  const createFolder = (name: string) => {
+    const folder: Folder = { id: Date.now().toString(), name }
+    folders.value.push(folder)
+    return folder
+  }
+
+  const updateFolder = (id: string, name: string) => {
+    const folder = folders.value.find(f => f.id === id)
+    if (folder) folder.name = name
+  }
+
+  const deleteFolder = (id: string) => {
+    if (id === 'default') return
+    const index = folders.value.findIndex(f => f.id === id)
+    if (index > -1) folders.value.splice(index, 1)
+    // 将该文件夹的笔记移回默认
+    notes.value.forEach(n => {
+      if (n.folderId === id) n.folderId = 'default'
+    })
+    if (currentFolderId.value === id) currentFolderId.value = 'default'
+  }
+
+  const setCurrentFolder = (id: string) => {
+    currentFolderId.value = id
+  }
+
   return {
     notes,
+    folders,
     currentNoteId,
+    currentFolderId,
     getCurrentNote,
     createNewNote,
     updateNote,
     deleteNote,
     setCurrentNote,
+    createFolder,
+    updateFolder,
+    deleteFolder,
+    setCurrentFolder,
   }
 })

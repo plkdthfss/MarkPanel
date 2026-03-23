@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AddButton: typeof import('./src/components/homePage/AddButton.vue')['default']
     CategoryTabs: typeof import('./src/components/homePage/CategoryTabs.vue')['default']
+    FolderPicker: typeof import('./src/components/homePage/FolderPicker.vue')['default']
     HomeHeader: typeof import('./src/components/homePage/HomeHeader.vue')['default']
     MilkdownEditor: typeof import('./src/components/editorPage/MilkdownEditor.vue')['default']
     NIcon: typeof import('naive-ui')['NIcon']
@@ -22,5 +23,6 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchBar: typeof import('./src/components/homePage/SearchBar.vue')['default']
+    TitleBar: typeof import('./src/components/editorPage/TitleBar.vue')['default']
   }
 }

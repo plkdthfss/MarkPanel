@@ -1,13 +1,13 @@
 <template>
   <div class="editor-view" :class="`theme-${themeStore.theme}`">
-    <NoteHeader 
-      :theme-mode="themeStore.theme" 
-      :note-title="currentNote?.title || ''"
-      @update:theme-mode="themeStore.theme = $event" 
+    <NoteHeader
+      :theme-mode="themeStore.theme"
+      @update:theme-mode="themeStore.theme = $event"
       @back="goBack"
-      @update:title="updateTitle"
     />
     <main class="editor-wrapper">
+      <TitleBar v-model="noteTitle" @update:model-value="updateTitle" />
+      <div class="title-divider"></div>
       <MilkdownEditor 
         :theme-mode="themeStore.theme"
         :note-id="currentNoteId"
@@ -18,9 +18,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import NoteHeader from '../components/editorPage/NoteHeader.vue'
+import TitleBar from '../components/editorPage/TitleBar.vue'
 import MilkdownEditor from '../components/editorPage/MilkdownEditor.vue'
 import { useThemeStore } from '../store/theme'
 import { useNoteStore } from '../store/note'
@@ -35,6 +36,13 @@ const currentNoteId = computed(() => route.params.id as string)
 const currentNote = computed(() => {
   return noteStore.notes.find(note => note.id === currentNoteId.value)
 })
+
+const noteTitle = ref(currentNote.value?.title || '')
+
+// 当切换笔记时同步标题
+watch(currentNote, (note) => {
+  noteTitle.value = note?.title || ''
+}, { immediate: true })
 
 onMounted(() => {
   if (currentNoteId.value) {
@@ -97,8 +105,14 @@ const updateTitle = (newTitle: string) => {
 .editor-wrapper {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 0 0 20px 0;
   background-color: var(--bg-primary);
+}
+
+.title-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0 28px 20px 28px;
 }
 
 .editor-wrapper::-webkit-scrollbar {

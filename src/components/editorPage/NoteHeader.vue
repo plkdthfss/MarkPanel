@@ -6,15 +6,6 @@
           <ArrowBackOutline />
         </n-icon>
       </button>
-      <h1 
-        class="note-title" 
-        contenteditable="true" 
-        spellcheck="false"
-        @blur="handleTitleBlur"
-        @keydown.enter="handleTitleEnter"
-      >
-        {{ noteTitle }}
-      </h1>
     </div>
 
     <div class="header-right">

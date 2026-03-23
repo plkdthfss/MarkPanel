@@ -3,15 +3,14 @@
     <HomeHeader :theme-mode="themeStore.theme" @update:theme-mode="themeStore.theme = $event" />
     <SearchBar v-model="searchQuery" />
     <AddButton />
-    <!-- <CategoryTabs :active-tab="activeTab" @update:active-tab="activeTab = $event" /> -->
     <NoteList 
       :notes="filteredNotes"
       :selected-note-id="selectedNoteId"
       @select-note="selectNote"
     />
     <div class="footer-info">
-      <span class="workspace-name">My Workspace</span>
-      <span class="notes-count">{{ noteStore.notes.length }} NOTES</span>
+      <FolderPicker />
+      <span class="notes-count">{{ filteredNotes.length }} NOTES</span>
     </div>
   </div>
 </template>
@@ -21,9 +20,8 @@ import { ref, computed } from 'vue'
 import HomeHeader from '../components/homePage/HomeHeader.vue'
 import SearchBar from '../components/homePage/SearchBar.vue'
 import AddButton from '../components/homePage/AddButton.vue'
-//import CategoryTabs from '../components/homePage/CategoryTabs.vue'
 import NoteList from '../components/homePage/NoteList.vue'
-import type { TabType } from '../store/note'
+import FolderPicker from '../components/homePage/FolderPicker.vue'
 import { useThemeStore } from '../store/theme'
 import { useNoteStore } from '../store/note'
 import { useRouter } from 'vue-router'
@@ -31,13 +29,16 @@ import { useRouter } from 'vue-router'
 const themeStore = useThemeStore()
 const noteStore = useNoteStore()
 const router = useRouter()
-const activeTab = ref<TabType>('all')
 const selectedNoteId = ref<string>()
 const searchQuery = ref('')
 
 const filteredNotes = computed(() => {
-  let result = noteStore.notes
+  // 先按当前文件夹过滤
+  let result = noteStore.notes.filter(
+    note => note.folderId === noteStore.currentFolderId
+  )
 
+  // 再按搜索词过滤
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     result = result.filter(note =>
@@ -82,6 +83,7 @@ const selectNote = (id: string) => {
   --button-active-bg: #475569;
   --scrollbar-thumb: #475569;
   --scrollbar-thumb-hover: #64748b;
+  --popup-bg: #1e293b;
 }
 
 .home-view.theme-light {
@@ -100,13 +102,14 @@ const selectNote = (id: string) => {
   --button-active-bg: #e2e8f0;
   --scrollbar-thumb: #cbd5e1;
   --scrollbar-thumb-hover: #94a3b8;
+  --popup-bg: #ffffff;
 }
 
 .footer-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 8px 10px;
   background-color: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
   font-size: 12px;
@@ -114,13 +117,9 @@ const selectNote = (id: string) => {
   flex-shrink: 0;
 }
 
-.workspace-name {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .notes-count {
   font-weight: 500;
+  font-size: 11px;
+  color: var(--text-tertiary);
 }
 </style>
