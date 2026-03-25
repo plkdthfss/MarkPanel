@@ -1,21 +1,41 @@
 <template>
   <div class="note-card" :class="{ 'is-active': isActive }">
     <div class="card-header">
-      <h3 class="card-title">{{ note.title }}</h3>
+      <!-- 标题：普通态 / 编辑态 -->
+      <div class="title-wrap" @click.stop>
+        <input
+          v-if="editingTitle"
+          ref="titleInputEl"
+          class="card-title-input"
+          v-model="draftTitle"
+          maxlength="80"
+          spellcheck="false"
+          @blur="finishTitleEdit"
+          @keydown.enter.prevent="finishTitleEdit"
+          @keydown.esc.prevent="cancelTitleEdit"
+        />
+        <h3 v-else class="card-title">{{ note.title }}</h3>
+        <button
+          v-if="!editingTitle"
+          class="edit-title-btn"
+          title="重命名"
+          @click.stop="startTitleEdit"
+        >
+          <n-icon :size="13"><PencilOutline /></n-icon>
+        </button>
+      </div>
       <span class="card-time">{{ formatTime(note.timestamp) }}</span>
     </div>
-    
+
     <p class="card-content">{{ truncateContent(note.content) }}</p>
-    
+
     <div class="card-footer">
       <button
         class="delete-btn"
         :title="'Delete note'"
         @click.stop="showConfirm = true"
       >
-        <n-icon :size="15">
-          <TrashOutline />
-        </n-icon>
+        <n-icon :size="15"><TrashOutline /></n-icon>
       </button>
     </div>
 
@@ -24,9 +44,7 @@
       <div v-if="showConfirm" class="confirm-overlay" @click.self="showConfirm = false">
         <div class="confirm-dialog">
           <div class="confirm-icon">
-            <n-icon :size="28" color="#ef4444">
-              <TrashOutline />
-            </n-icon>
+            <n-icon :size="28" color="#ef4444"><TrashOutline /></n-icon>
           </div>
           <p class="confirm-text">你确定删除 <strong>「{{ note.title }}」</strong> 笔记吗？</p>
           <p class="confirm-subtext">此操作不可撤销</p>
@@ -41,8 +59,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { TrashOutline } from '@vicons/ionicons5'
+import { ref, nextTick } from 'vue'
+import { TrashOutline, PencilOutline } from '@vicons/ionicons5'
 import type { Note } from '../../store/note'
 import { useNoteStore } from '../../store/note'
 
@@ -61,13 +79,36 @@ const emit = defineEmits<Emits>()
 const noteStore = useNoteStore()
 
 const showConfirm = ref(false)
+const editingTitle = ref(false)
+const draftTitle = ref('')
+const titleInputEl = ref<HTMLInputElement | null>(null)
 
+// ── 标题编辑 ──────────────────────────────────────────────
+const startTitleEdit = async () => {
+  draftTitle.value = props.note.title
+  editingTitle.value = true
+  await nextTick()
+  titleInputEl.value?.select()
+}
+
+const finishTitleEdit = () => {
+  const name = draftTitle.value.trim() || props.note.title
+  noteStore.updateNote(props.note.id, { title: name })
+  editingTitle.value = false
+}
+
+const cancelTitleEdit = () => {
+  editingTitle.value = false
+}
+
+// ── 删除 ──────────────────────────────────────────────────
 const handleDelete = () => {
   noteStore.deleteNote(props.note.id)
   showConfirm.value = false
   emit('deleted')
 }
 
+// ── 格式化 ────────────────────────────────────────────────
 const formatTime = (timestamp: number): string => {
   const now = new Date()
   const noteDate = new Date(timestamp)
@@ -81,13 +122,32 @@ const formatTime = (timestamp: number): string => {
   if (diffHours < 24) return `${diffHours}H AGO`
   if (diffDays === 1) return 'YESTERDAY'
   if (diffDays < 7) return `${diffDays}D AGO`
-  
   return noteDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()
 }
 
+// ── 纯文本提取（去除 markdown 语法符号） ──────────────────
+const stripMarkdown = (content: string): string => {
+  return content
+    .replace(/^#{1,6}\s+/gm, '')          // 标题 # ## ###
+    .replace(/\*\*(.+?)\*\*/g, '$1')      // 粗体
+    .replace(/\*(.+?)\*/g, '$1')          // 斜体
+    .replace(/~~(.+?)~~/g, '$1')          // 删除线
+    .replace(/```[\s\S]*?```/g, '')       // 代码块
+    .replace(/`(.+?)`/g, '$1')            // 行内代码
+    .replace(/!\[.*?\]\(.*?\)/g, '')      // 图片
+    .replace(/\[(.+?)\]\(.*?\)/g, '$1')  // 链接
+    .replace(/^\s*[-*+]\s+/gm, '')        // 无序列表
+    .replace(/^\s*\d+\.\s+/gm, '')        // 有序列表
+    .replace(/^\s*>\s*/gm, '')            // 引用
+    .replace(/^[-*_]{3,}$/gm, '')         // 分割线
+    .replace(/\n+/g, ' ')                 // 换行转空格
+    .trim()
+}
+
 const truncateContent = (content: string): string => {
+  const plain = stripMarkdown(content)
   const maxLength = 120
-  return content.length > maxLength ? content.substring(0, maxLength) + '...' : content
+  return plain.length > maxLength ? plain.substring(0, maxLength) + '...' : plain
 }
 </script>
 
@@ -120,6 +180,15 @@ const truncateContent = (content: string): string => {
   margin-bottom: 8px;
 }
 
+/* 标题区域 */
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
 .card-title {
   margin: 0;
   font-size: 14px;
@@ -127,6 +196,48 @@ const truncateContent = (content: string): string => {
   flex: 1;
   word-break: break-word;
   line-height: 1.4;
+  min-width: 0;
+}
+
+.card-title-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  background: var(--button-hover-bg, #334155);
+  color: var(--text-primary);
+  border: 1px solid var(--accent-color, #0ea5e9);
+  border-radius: 4px;
+  padding: 1px 6px;
+  outline: none;
+  font-family: inherit;
+}
+
+.edit-title-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--text-tertiary, #94a3b8);
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  padding: 0;
+}
+
+.note-card:hover .edit-title-btn {
+  opacity: 1;
+}
+
+.edit-title-btn:hover {
+  background: var(--button-hover-bg, #334155);
+  color: var(--text-primary);
 }
 
 .card-time {
@@ -171,11 +282,6 @@ const truncateContent = (content: string): string => {
 .delete-btn:hover {
   color: #ef4444;
   background-color: rgba(239, 68, 68, 0.1);
-}
-
-.delete-label {
-  font-size: 11px;
-  font-weight: 500;
 }
 
 /* 确认对话框遮罩 */

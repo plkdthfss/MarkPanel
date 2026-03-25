@@ -2,7 +2,7 @@ import { defineManifest } from '@crxjs/vite-plugin'
 
 export default defineManifest({
   manifest_version: 3,
-  name: "EasyNote First Version",
+  name: "MarkPanel",
   version: "1.0.0",
   description: "Vue + Vite 写的侧边栏扩展",
   permissions: ["sidePanel", "activeTab", "storage"],

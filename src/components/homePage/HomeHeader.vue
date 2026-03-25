@@ -9,12 +9,14 @@
       </div>
 
       <div class="right-section">
+        <!--
         <button class="icon-button" @click="toggleTheme" :title="isDark ? 'Light mode' : 'Dark mode'">
           <n-icon :size="18">
             <SunnyOutline v-if="isDark" />
             <MoonOutline v-else />
           </n-icon>
         </button>
+        -->
         <button class="icon-button" :title="'Settings'">
           <n-icon :size="18">
             <SettingsOutline />
