@@ -9,7 +9,7 @@ import { onMounted, ref, onBeforeUnmount, watch, nextTick } from 'vue'
 import { Crepe } from '@milkdown/crepe'
 import '@milkdown/crepe/theme/common/style.css'
 import '@milkdown/crepe/theme/frame.css'
-import '../../../assets/crep-custom.css'
+import '../../styles/crep-custom.css'
 import { useNoteStore } from '../../store/note'
 
 interface Props {
